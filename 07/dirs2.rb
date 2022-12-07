@@ -19,6 +19,16 @@ class FakeDir
     @files = []
   end
 
+  def fullname
+    if parent_dir.nil?
+      @name
+    elsif parent_dir.fullname == '/'
+      "/#{name}"
+    else
+      "#{parent_dir.fullname}/#{@name}"
+    end
+  end
+
   def size
     @files.sum(&:size)
   end
@@ -69,12 +79,15 @@ data.each do |d|
   end
 end
 
-sum = 0
+total_disk = 70_000_000
+total_needed = 30_000_000
+total_used = dirs.first.size
+total_unused = total_disk - total_used
+req = total_needed - total_unused
 
-dirs.each do |dir|
-  if dir.size <= 100_000
-    sum += dir.size
-  end
-end
+puts "total used: #{total_used}"
+puts "amt needed to be freed: #{req}"
 
-puts sum
+sizes = dirs.map(&:size).sort
+
+puts sizes.select { |s| s >= req }.first
